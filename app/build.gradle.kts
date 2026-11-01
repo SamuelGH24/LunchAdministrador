@@ -47,12 +47,17 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.material.icons.core)      // NUEVO
 
     // Room + ViewModel
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.lifecycle.viewmodel)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)      // NUEVO
     ksp(libs.androidx.room.compiler)
+
+    // Navegación entre pantallas
+    implementation(libs.androidx.navigation.compose)               // NUEVO
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
