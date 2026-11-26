@@ -15,6 +15,7 @@ import androidx.paging.compose.itemKey
 import com.example.lunchadministrador.ui.components.*
 import com.example.lunchadministrador.ui.fabrica
 import com.example.lunchadministrador.ui.theme.Naranja
+import com.example.lunchadministrador.ui.theme.Rojo
 import com.example.lunchadministrador.ui.theme.TextoSecundario
 import com.example.lunchadministrador.util.Formato
 
@@ -46,7 +47,7 @@ fun HistorialScreen(
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             p.lineas.forEach { l ->
                                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    IconoProducto(l.icono, 48)
+                                    IconoProducto(l.icono, 48, l.nombre)
                                     Txt("x${l.cantidad}", 12)
                                 }
                             }
@@ -58,6 +59,18 @@ fun HistorialScreen(
             if (pedidos.loadState.refresh is LoadState.Loading || pedidos.loadState.append is LoadState.Loading) item {
                 Box(Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator(color = Naranja)
+                }
+            }
+            // Errores al cargar (con botón para reintentar)
+            val fallo = (pedidos.loadState.refresh as? LoadState.Error) ?: (pedidos.loadState.append as? LoadState.Error)
+            if (fallo != null) item {
+                Column(
+                    Modifier.fillMaxWidth().padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Txt("Error al cargar el historial: ${fallo.error.message}", 14, color = Rojo)
+                    Caja(onClick = { pedidos.retry() }) { Txt("Reintentar", 14, true) }
                 }
             }
         }

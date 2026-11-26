@@ -47,26 +47,20 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons.core)      // NUEVO
+    implementation(libs.androidx.compose.material.icons.core)
 
     // Room + ViewModel
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)
     implementation(libs.androidx.lifecycle.viewmodel)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)      // NUEVO
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     ksp(libs.androidx.room.compiler)
 
     // Navegación entre pantallas
-    implementation(libs.androidx.navigation.compose)               // NUEVO
+    implementation(libs.androidx.navigation.compose)
 
     // Imágenes desde internet (Coil)
     implementation("io.coil-kt:coil-compose:2.6.0")
-
-    // Red: Retrofit + Moshi (el codegen va con ksp, que ya tienes)
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
-    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.1")
 
     // Paginación
     implementation("androidx.paging:paging-runtime:3.3.0")

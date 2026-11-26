@@ -118,13 +118,19 @@ fun CirculoMesa(texto: String, borde: Color = Naranja, onClick: (() -> Unit)? = 
 /**
  * Imagen de un producto. Si [icono] es un link (http...) se carga la foto con Coil;
  * si falla o todavía carga, muestra un respaldo. Si es un emoji, lo dibuja directamente.
+ * [descripcion] es el texto que leen los lectores de pantalla (accesibilidad).
  */
 @Composable
-fun FotoProducto(icono: String, modifier: Modifier = Modifier, emojiSize: Int = 24) {
+fun FotoProducto(
+    icono: String,
+    modifier: Modifier = Modifier,
+    emojiSize: Int = 24,
+    descripcion: String? = null
+) {
     if (icono.startsWith("http")) {
         SubcomposeAsyncImage(
             model = icono,
-            contentDescription = null,
+            contentDescription = descripcion,
             contentScale = ContentScale.Crop,
             modifier = modifier,
             loading = {
@@ -145,9 +151,9 @@ fun FotoProducto(icono: String, modifier: Modifier = Modifier, emojiSize: Int = 
 
 /** Recuadro con la foto (o emoji) del producto. */
 @Composable
-fun IconoProducto(icono: String, size: Int = 64) {
+fun IconoProducto(icono: String, size: Int = 64, descripcion: String? = null) {
     Box(
         Modifier.size(size.dp).clip(RoundedCornerShape(12.dp)).background(Superficie),
         contentAlignment = Alignment.Center
-    ) { FotoProducto(icono, Modifier.fillMaxSize(), emojiSize = (size / 2.6).toInt()) }
+    ) { FotoProducto(icono, Modifier.fillMaxSize(), emojiSize = (size / 2.6).toInt(), descripcion = descripcion) }
 }

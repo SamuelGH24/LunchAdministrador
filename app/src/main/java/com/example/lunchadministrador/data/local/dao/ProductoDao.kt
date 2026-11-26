@@ -13,5 +13,9 @@ interface ProductoDao {
     @Query("SELECT COUNT(*) FROM productos") suspend fun contar(): Int
     @Insert suspend fun insertar(lista: List<ProductoEntity>)
     @Query("UPDATE productos SET stock = stock + :unidades WHERE id = :id") suspend fun sumarStock(id: Int, unidades: Int)
+
+    /** Resta una unidad solo si hay stock. Devuelve cuántas filas cambió (0 = agotado). */
+    @Query("UPDATE productos SET stock = stock - 1 WHERE id = :id AND stock > 0") suspend fun descontarUno(id: Int): Int
+
     @Insert suspend fun insertarCompra(compra: CompraEntity)
 }

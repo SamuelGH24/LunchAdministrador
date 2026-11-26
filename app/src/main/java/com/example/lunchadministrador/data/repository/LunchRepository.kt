@@ -47,23 +47,28 @@ class LunchRepository(private val db: AppDatabase) {
     fun cantidadVendidaPor(usuarioId: Long): Flow<Int> = pedidoDao.cantidadVendidaPor(usuarioId, Fechas.inicioDelDia())
 
     // ── Escritura ──
-    suspend fun agregarProducto(mesa: Int, productoId: Int, usuario: UsuarioEntity) {
+
+    /** Devuelve false si el producto está agotado. El stock se descuenta al agregarlo a la mesa. */
+    suspend fun agregarProducto(mesa: Int, productoId: Int, usuario: UsuarioEntity): Boolean =
         db.withTransaction {
-            val m = mesaDao.mesa(mesa) ?: return@withTransaction
+            val m = mesaDao.mesa(mesa) ?: return@withTransaction false
+            if (productoDao.descontarUno(productoId) == 0) return@withTransaction false
             val linea = mesaDao.linea(mesa, productoId)
             if (linea == null) mesaDao.insertarLinea(MesaLineaEntity(mesaNumero = mesa, productoId = productoId, cantidad = 1))
             else mesaDao.actualizarLinea(linea.copy(cantidad = linea.cantidad + 1))
             if (m.desde == null) {
                 mesaDao.guardarMesa(m.copy(atendidoPorId = usuario.id, atendidoPorNombre = usuario.nombre, desde = System.currentTimeMillis()))
             }
+            true
         }
-    }
 
+    /** Quita una unidad de la mesa y se la devuelve al inventario. */
     suspend fun quitarUnidad(mesa: Int, productoId: Int) {
         db.withTransaction {
             val linea = mesaDao.linea(mesa, productoId) ?: return@withTransaction
             if (linea.cantidad > 1) mesaDao.actualizarLinea(linea.copy(cantidad = linea.cantidad - 1))
             else mesaDao.borrarLinea(linea)
+            productoDao.sumarStock(productoId, 1)
             if (mesaDao.lineasDe(mesa).isEmpty()) mesaDao.guardarMesa(MesaEntity(numero = mesa))
         }
     }

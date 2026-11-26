@@ -16,8 +16,9 @@ class AgregarViewModel(private val repo: LunchRepository, private val auth: Auth
     val ventasMes: StateFlow<Map<Int, Int>> =
         repo.ventasDelMes().stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyMap())
 
-    fun agregar(mesa: Int, productoId: Int) {
+    /** onResultado recibe true si se agregó, o false si el producto está agotado. */
+    fun agregar(mesa: Int, productoId: Int, onResultado: (Boolean) -> Unit) {
         val usuario = auth.usuario.value ?: return
-        viewModelScope.launch { repo.agregarProducto(mesa, productoId, usuario) }
+        viewModelScope.launch { onResultado(repo.agregarProducto(mesa, productoId, usuario)) }
     }
 }

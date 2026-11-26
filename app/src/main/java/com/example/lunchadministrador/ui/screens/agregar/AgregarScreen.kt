@@ -56,11 +56,12 @@ fun AgregarScreen(
                     FotoProducto(
                         p.icono,
                         Modifier.fillMaxWidth().aspectRatio(1.3f).clip(RoundedCornerShape(8.dp)),
-                        emojiSize = 40
+                        emojiSize = 40,
+                        descripcion = p.nombre
                     )
                     Spacer(Modifier.height(6.dp))
                     Txt(p.nombre, 14, true)
-                    Txt(Formato.pesos(p.precio), 13, color = NaranjaOscuro)
+                    Txt(if (p.stock <= 0) "Agotado" else Formato.pesos(p.precio), 13, color = NaranjaOscuro)
                 }
             }
         }
@@ -74,18 +75,21 @@ fun AgregarScreen(
             containerColor = Superficie,
             confirmButton = {
                 Caja(Modifier.heightIn(min = 48.dp), onClick = {
-                    vm.agregar(mesa, p.id)
                     elegido = null
-                    scope.launch {
-                        snackbar.currentSnackbarData?.dismiss()
-                        snackbar.showSnackbar("${p.nombre} añadido a la mesa $mesa")
+                    vm.agregar(mesa, p.id) { ok ->
+                        scope.launch {
+                            snackbar.currentSnackbarData?.dismiss()
+                            snackbar.showSnackbar(
+                                if (ok) "${p.nombre} añadido a la mesa $mesa" else "${p.nombre} está agotado"
+                            )
+                        }
                     }
                 }) { Txt("Añadir", 14, true) }
             },
             dismissButton = { TextButton(onClick = { elegido = null }) { Text("Cerrar", color = TextoSecundario) } },
             text = {
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-                    IconoProducto(p.icono, 110)
+                    IconoProducto(p.icono, 110, p.nombre)
                     Spacer(Modifier.height(8.dp))
                     Txt(p.nombre, 16, true)
                     Spacer(Modifier.height(8.dp))
