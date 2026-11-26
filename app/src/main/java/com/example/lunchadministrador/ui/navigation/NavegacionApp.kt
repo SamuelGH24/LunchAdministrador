@@ -1,13 +1,16 @@
 package com.example.lunchadministrador.ui.navigation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -18,11 +21,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import androidx.compose.foundation.layout.Box
 import com.example.lunchadministrador.data.model.Rol
 import com.example.lunchadministrador.data.repository.AuthRepository
-import com.example.lunchadministrador.ui.components.BarraSuperior
+import com.example.lunchadministrador.ui.components.AvisoHost
+import com.example.lunchadministrador.ui.components.BarraInferior
 import com.example.lunchadministrador.ui.components.Caja
+import com.example.lunchadministrador.ui.components.LocalSnackbar
 import com.example.lunchadministrador.ui.components.Txt
 import com.example.lunchadministrador.ui.screens.agregar.AgregarScreen
 import com.example.lunchadministrador.ui.screens.cobro.CobroScreen
@@ -49,6 +53,7 @@ fun NavegacionApp(auth: AuthRepository) {
     }
 
     val nav = rememberNavController()
+    val snackbar = remember { SnackbarHostState() }
     val inicio = remember { if (usuario != null) Rutas.MESAS else Rutas.LOGIN }
     val ruta = nav.currentBackStackEntryAsState().value?.destination?.route
     var sinPermiso by remember { mutableStateOf(false) }
@@ -56,53 +61,61 @@ fun NavegacionApp(auth: AuthRepository) {
     fun ir(destino: String) {
         // La compra de materiales es solo del Administrador ("No eres Jefe de compra").
         if (destino == Rutas.COMPRA && usuario?.rolEnum != Rol.ADMIN) { sinPermiso = true; return }
+        // Cada pestaña de la barra abre su pantalla principal (sin restaurar sub-pantallas como el historial).
         nav.navigate(destino) {
-            popUpTo(Rutas.MESAS) { saveState = true }
+            popUpTo(Rutas.MESAS)
             launchSingleTop = true
-            restoreState = true
         }
     }
 
-    Column(Modifier.fillMaxSize()) {
-        if (ruta != null && ruta != Rutas.LOGIN && ruta != Rutas.REGISTRO) BarraSuperior(ruta) { ir(it) }
+    CompositionLocalProvider(LocalSnackbar provides snackbar) {
+        Column(Modifier.fillMaxSize()) {
+            Box(Modifier.weight(1f)) {
+                NavHost(nav, startDestination = inicio, modifier = Modifier.fillMaxSize()) {
+                    composable(Rutas.LOGIN) {
+                        LoginScreen(
+                            onIngreso = { nav.navigate(Rutas.MESAS) { popUpTo(Rutas.LOGIN) { inclusive = true } } },
+                            onRegistro = { nav.navigate(Rutas.REGISTRO) }
+                        )
+                    }
+                    composable(Rutas.REGISTRO) {
+                        RegistroScreen(
+                            onRegistrado = { nav.navigate(Rutas.MESAS) { popUpTo(Rutas.LOGIN) { inclusive = true } } },
+                            onVolver = { nav.popBackStack() }
+                        )
+                    }
+                    composable(Rutas.MESAS) {
+                        MesasScreen(
+                            onAgregar = { nav.navigate(Rutas.agregar(it)) },
+                            onHistorial = { nav.navigate(Rutas.historial(it)) }
+                        )
+                    }
+                    composable(Rutas.AGREGAR, listOf(navArgument("mesa") { type = NavType.IntType })) {
+                        AgregarScreen(mesa = it.arguments?.getInt("mesa") ?: 1, onVolver = { nav.popBackStack() })
+                    }
+                    composable(Rutas.HISTORIAL, listOf(navArgument("mesa") { type = NavType.IntType })) {
+                        HistorialScreen(
+                            mesaInicial = it.arguments?.getInt("mesa") ?: 1,
+                            onVolver = { nav.popBackStack() }
+                        )
+                    }
+                    composable(Rutas.COBRO) { CobroScreen() }
+                    composable(Rutas.PRODUCTOS) {
+                        ProductosScreen(esAdmin = usuario?.rolEnum == Rol.ADMIN, onVendidos = { nav.navigate(Rutas.VENDIDOS) })
+                    }
+                    composable(Rutas.VENDIDOS) { VendidosScreen(onVolver = { nav.popBackStack() }) }
+                    composable(Rutas.COMPRA) { CompraScreen() }
+                    composable(Rutas.CUENTA) {
+                        CuentaScreen(onSalir = {
+                            auth.cerrarSesion()
+                            nav.navigate(Rutas.LOGIN) { popUpTo(nav.graph.id) { inclusive = true } }
+                        })
+                    }
+                }
+                AvisoHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(12.dp))
+            }
 
-        NavHost(nav, startDestination = inicio, modifier = Modifier.weight(1f)) {
-            composable(Rutas.LOGIN) {
-                LoginScreen(
-                    onIngreso = { nav.navigate(Rutas.MESAS) { popUpTo(Rutas.LOGIN) { inclusive = true } } },
-                    onRegistro = { nav.navigate(Rutas.REGISTRO) }
-                )
-            }
-            composable(Rutas.REGISTRO) {
-                RegistroScreen(
-                    onRegistrado = { nav.navigate(Rutas.MESAS) { popUpTo(Rutas.LOGIN) { inclusive = true } } },
-                    onVolver = { nav.popBackStack() }
-                )
-            }
-            composable(Rutas.MESAS) {
-                MesasScreen(
-                    onAgregar = { nav.navigate(Rutas.agregar(it)) },
-                    onHistorial = { nav.navigate(Rutas.historial(it)) }
-                )
-            }
-            composable(Rutas.AGREGAR, listOf(navArgument("mesa") { type = NavType.IntType })) {
-                AgregarScreen(mesa = it.arguments?.getInt("mesa") ?: 1, onVolver = { nav.popBackStack() })
-            }
-            composable(Rutas.HISTORIAL, listOf(navArgument("mesa") { type = NavType.IntType })) {
-                HistorialScreen(mesaInicial = it.arguments?.getInt("mesa") ?: 1)
-            }
-            composable(Rutas.COBRO) { CobroScreen() }
-            composable(Rutas.PRODUCTOS) {
-                ProductosScreen(esAdmin = usuario?.rolEnum == Rol.ADMIN, onVendidos = { nav.navigate(Rutas.VENDIDOS) })
-            }
-            composable(Rutas.VENDIDOS) { VendidosScreen() }
-            composable(Rutas.COMPRA) { CompraScreen() }
-            composable(Rutas.CUENTA) {
-                CuentaScreen(onSalir = {
-                    auth.cerrarSesion()
-                    nav.navigate(Rutas.LOGIN) { popUpTo(nav.graph.id) { inclusive = true } }
-                })
-            }
+            if (ruta != null && ruta != Rutas.LOGIN && ruta != Rutas.REGISTRO) BarraInferior(ruta) { ir(it) }
         }
     }
 

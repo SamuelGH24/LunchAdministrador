@@ -9,15 +9,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.lunchadministrador.ui.components.*
 import com.example.lunchadministrador.ui.fabrica
@@ -63,7 +60,7 @@ fun CobroScreen(vm: CobroViewModel = viewModel(factory = fabrica { CobroViewMode
                 items(mesa.lineas) { l ->
                     Caja(Modifier.fillMaxWidth(), borde = Naranja) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(l.icono, fontSize = 28.sp)
+                            IconoProducto(l.icono, 48)
                             Spacer(Modifier.width(10.dp))
                             Txt("${l.nombre} x${l.cantidad}", 14, align = TextAlign.Start, modifier = Modifier.weight(1f))
                             Txt(Formato.pesos(l.precio * l.cantidad), 14)
@@ -74,7 +71,7 @@ fun CobroScreen(vm: CobroViewModel = viewModel(factory = fabrica { CobroViewMode
             Spacer(Modifier.height(8.dp))
             Caja { Txt("Valor total: ${Formato.pesos(mesa.total)}", 16, true) }
             Spacer(Modifier.height(10.dp))
-            Caja(onClick = { val n = mesa.numero; vm.cobrar(n); sel = null; pagada = n }) { Txt("Valor pagado?", 15, true) }
+            Caja(Modifier.heightIn(min = 48.dp), onClick = { val n = mesa.numero; vm.cobrar(n); sel = null; pagada = n }) { Txt("Valor pagado?", 15, true) }
         }
     }
 

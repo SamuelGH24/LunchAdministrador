@@ -16,14 +16,17 @@ import com.example.lunchadministrador.ui.theme.TextoSecundario
 import com.example.lunchadministrador.util.Formato
 
 @Composable
-fun VendidosScreen(vm: VendidosViewModel = viewModel(factory = fabrica { VendidosViewModel(it.lunch) })) {
+fun VendidosScreen(
+    onVolver: () -> Unit,
+    vm: VendidosViewModel = viewModel(factory = fabrica { VendidosViewModel(it.lunch) })
+) {
     val vendidos by vm.vendidos.collectAsState()
     val total = vendidos.sumOf { it.subtotal }
 
     Column(Modifier.fillMaxSize().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally) {
         Caja { Txt("Productos vendidos hoy\ntotal facturado: ${Formato.pesos(total)}", 15, true) }
         Spacer(Modifier.height(12.dp))
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        LazyColumn(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (vendidos.isEmpty()) item {
                 Txt("Aún no se ha cerrado ninguna mesa hoy", 14, color = TextoSecundario, modifier = Modifier.padding(24.dp))
             }
@@ -35,5 +38,6 @@ fun VendidosScreen(vm: VendidosViewModel = viewModel(factory = fabrica { Vendido
                 }
             }
         }
+        Boton("Volver a productos", onClick = onVolver, modifier = Modifier.padding(top = 10.dp))
     }
 }

@@ -59,6 +59,20 @@ dependencies {
     // Navegación entre pantallas
     implementation(libs.androidx.navigation.compose)               // NUEVO
 
+    // Imágenes desde internet (Coil)
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+    // Red: Retrofit + Moshi (el codegen va con ksp, que ya tienes)
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-moshi:2.9.0")
+    implementation("com.squareup.moshi:moshi-kotlin:1.15.1")
+    ksp("com.squareup.moshi:moshi-kotlin-codegen:1.15.1")
+
+    // Paginación
+    implementation("androidx.paging:paging-runtime:3.3.0")
+    implementation("androidx.paging:paging-compose:3.3.0")
+    implementation("androidx.room:room-paging:2.8.4")
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

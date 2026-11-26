@@ -1,5 +1,8 @@
 package com.example.lunchadministrador.data.repository
 
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
 import androidx.room.withTransaction
 import com.example.lunchadministrador.data.local.AppDatabase
 import com.example.lunchadministrador.data.local.dao.PedidoConLineas
@@ -27,6 +30,13 @@ class LunchRepository(private val db: AppDatabase) {
     fun productos(): Flow<List<ProductoEntity>> = productoDao.observarTodos()
 
     fun historialMesa(mesa: Int): Flow<List<PedidoConLineas>> = pedidoDao.historialMesa(mesa, Fechas.inicioDelDia())
+
+    /** Historial paginado: carga 10 pedidos por página (Paging 3). */
+    fun historialMesaPaginado(mesa: Int): Flow<PagingData<PedidoConLineas>> =
+        Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = { pedidoDao.historialMesaPaginado(mesa, Fechas.inicioDelDia()) }
+        ).flow
 
     fun vendidosHoy(): Flow<List<VentaProducto>> = pedidoDao.vendidosDesde(Fechas.inicioDelDia())
 
